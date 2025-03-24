@@ -182,8 +182,14 @@ function formatDate(date) {
  * 12, 2023 => 10
  * 1, 2024 => 8
  */
-function getCountWeekendsInMonth(/* month, year */) {
-  throw new Error('Not implemented');
+function getCountWeekendsInMonth(month, year) {
+  const daysInMonth = new Date(year, month, 0).getDate();
+  let weekends = 0;
+  for (let i = 1; i <= daysInMonth; i += 1) {
+    const currDay = new Date(year, month - 1, i).getDay();
+    if (currDay === 0 || currDay === 6) weekends += 1;
+  }
+  return weekends;
 }
 
 /**
@@ -221,8 +227,12 @@ function getWeekNumberByDate(date) {
  * Date(2024, 0, 13) => Date(2024, 8, 13)
  * Date(2023, 1, 1) => Date(2023, 9, 13)
  */
-function getNextFridayThe13th(/* date */) {
-  throw new Error('Not implemented');
+function getNextFridayThe13th(date) {
+  const currDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  while (currDay.getDate() !== 13 || currDay.getDay() !== 5) {
+    currDay.setDate(currDay.getDate() + 1);
+  }
+  return currDay;
 }
 
 /**
@@ -269,8 +279,36 @@ function getQuarter(date) {
  * { start: '01-01-2024', end: '15-01-2024' }, 1, 3 => ['01-01-2024', '05-01-2024', '09-01-2024', '13-01-2024']
  * { start: '01-01-2024', end: '10-01-2024' }, 1, 1 => ['01-01-2024', '03-01-2024', '05-01-2024', '07-01-2024', '09-01-2024']
  */
-function getWorkSchedule(/* period, countWorkDays, countOffDays */) {
-  throw new Error('Not implemented');
+function getWorkSchedule(period, countWorkDays, countOffDays) {
+  const parseDate = (dateStr) => {
+    const [day, month, year] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
+  const format = (date) => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const startDate = parseDate(period.start);
+  const endDate = parseDate(period.end);
+
+  const workSchedule = [];
+  const currentDate = new Date(startDate);
+  let cycleDay = 0;
+
+  while (currentDate <= endDate) {
+    if (cycleDay < countWorkDays) {
+      workSchedule.push(format(currentDate));
+    }
+
+    currentDate.setDate(currentDate.getDate() + 1);
+    cycleDay = (cycleDay + 1) % (countWorkDays + countOffDays);
+  }
+
+  return workSchedule;
 }
 
 /**
